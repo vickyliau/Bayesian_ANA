@@ -1,0 +1,34 @@
+model-->
+model
+{for (i in 1:reg) #reg: the number of regions
+   {for (k in 1:T) #T: the number of time steps
+   { # Poisson likelihood for observed counts; y is the observed value of the dependent variable and e is the expected value
+    y[i,k]~dpois(mu[i,k])
+    #log(mu[i,k])<-alpha+u[i]+v[i]+beta*t[k]+delta[i]*t[k] 
+    #log(mu[i,k])<-alpha
+    #log(mu[i,k])<-alpha+beta*t[k]
+    #log(mu[i,k])<-alpha+u[i]+beta*t[k]+delta[i]*t[k] 
+    log(mu[i,k])<-alpha+v[i]+beta*t[k]+delta[i]*t[k] 
+  }
+    TT[i]<-exp(beta+delta[i]) 
+  }
+    # CAR prior distribution for spatial correlated heterogeneity
+  u[1:reg]~car.normal(adj[],weights[],num[],tau.u)
+  delta[1:reg]~car.normal(adj[],weights[],num[],tau.delta)
+  # Prior distributions for the Uncorrelated Heterogeneity
+  for(i in 1:reg)
+  {v[i]~dnorm(0,tau.v)}
+  # Weights
+  for(k in 1:sumNumNeigh)
+  { weights[k]<-1}
+  # Improper distribution for the mean relative risk in the study region
+  alpha~dflat()
+
+  # Hyperprior distributions on inverse variance parameter of random effects
+  beta~dnorm(0,1)
+  tau.v~dgamma(0.5,0.0005)
+  tau.u~dgamma(0.5,0.0005)
+  tau.delta~dgamma(0.5,0.0005)
+}
+#theta[i,k] the Relative Risk and TT will give the time period RR
+
